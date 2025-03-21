@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudburst Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            max-width: 400px;
+            text-align: center;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        img {
+            width: 100px;
+        }
+        .cloudburst {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            display: inline-block;
+        }
+        .yes {
+            background: red;
+            color: white;
+        }
+        .no {
+            background: green;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Cloudburst Prediction System</h2>
+    <div class="container">
+        <input type="text" id="location" placeholder="Enter Location" />
+        <button onclick="getWeather()">Check Weather</button>
+        
+        <div id="weatherResult" style="display:none;">
+            <h3>Weather in <span id="loc"></span></h3>
+            <img id="weatherIcon" src="" alt="Weather Icon">
+            <p><Strong><span id="outlook"></span></Strong></p>
+            <p><strong>Temperature:</strong> <span id="temp"></span>°C</p>
+            <p><strong>Humidity:</strong> <span id="humidity"></span>%</p>
+            <p><strong>Pressure:</strong> <span id="pressure"></span> mb</p>
+            <p><strong>Wind Speed:</strong> <span id="wind"></span> kph</p>
+            <p><strong>Cloud Cover:</strong> <span id="cloud"></span>%</p>
+            <p><strong>Rainfall:</strong> <span id="rain"></span> mm</p>
+            <p><strong>Cloudburst Today:</strong> <span id="cloudburst" class="cloudburst"></span></p>
+            
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3> What is a Cloudburst?</h3>
+        <p>A cloudburst is an extreme rainfall event where more than 100mm of rain falls within an hour in a localized area.</p>
+        <p> Conditions for Cloudburst:</p>
+        <ul>
+            <li>Humidity above 90%</li>
+            <li>Wind speed greater than 30 km/h</li>
+            <li>Temperature below 15°C</li>
+            <li>High Rainfall Rate (100mm+ per hour) (Sudden and intense downpour)</li>
+            <li>Mountainous or Hilly Region (Enhances cloud formation and rain intensity)</li>
+        </ul>
+        <p>If these conditions are met, there is a high chance of a cloudburst.</p>
+    </div>
+
+    <script>
+        function getWeather() {
+            let location = document.getElementById("location").value;
+            if (!location) {
+                alert("Please enter a location!");
+                return;
+            }
+
+            fetch(`http://127.0.0.1:5000/predict?location=${location}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                    return;
+                }
+
+                document.getElementById("weatherResult").style.display = "block";
+                document.getElementById("loc").innerText = data.location;
+                document.getElementById("temp").innerText = data.WeatherData.Temperature;
+                document.getElementById("humidity").innerText = data.WeatherData.Humidity;
+                document.getElementById("pressure").innerText = data.WeatherData.Pressure;
+                document.getElementById("wind").innerText = data.WeatherData.WindSpeed;
+                document.getElementById("cloud").innerText = data.WeatherData.CloudCover;
+                document.getElementById("rain").innerText = data.WeatherData.Rainfall;
+                document.getElementById("outlook").innerText = data.WeatherData.image.text;
+                document.getElementById("weatherIcon").src = data.WeatherData.image.icon;
+
+                // Show weather image
+                // fetch(`http://api.weatherapi.com/v1/current.json?key=your_api_key_here&q=${location}`)
+                // .then(res => res.json())
+                // .then(weatherApiData => {
+                //     document.getElementById("weatherIcon").src = weatherApiData.current.condition.icon;
+                // });
+
+                // Cloudburst status
+                let cloudburstElement = document.getElementById("cloudburst");
+                if (data.Cloudburst_Today) {
+                    cloudburstElement.innerText = "Yes (High Risk)";
+                    cloudburstElement.className = "cloudburst yes";
+                } else {
+                    cloudburstElement.innerText = "No (Safe)";
+                    cloudburstElement.className = "cloudburst no";
+                }
+            })
+            .catch(error => {
+                alert("Error fetching data!");
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
